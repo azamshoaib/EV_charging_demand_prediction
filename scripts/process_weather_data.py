@@ -4,6 +4,8 @@ import datetime
 import pandas as pd
 
 
+
+# To extract features using raw data in csv
 def data_preprocess(data_caltech):
     newData = []
     for i in range(len(data_caltech)):
@@ -59,41 +61,73 @@ def data_preprocess(data_caltech):
     new_feature_data = pd.DataFrame(newData)
     new_feature_data.columns = ['chargingHour','kWhDelivered','userID']
     # new_feature_data = new_feature_data.set_index('chargingHour')
-
     return new_feature_data
 
-def charging_demand_per_hour(processed_data):
-    df_hour = processed_data.groupby(['chargingHour']).sum()
-    plt.figure(dpi=1200)
-    plt.plot(df_hour.index, df_hour['kWhDelivered'], label='original',linewidth=1)
-    plt.gcf().autofmt_xdate()
-    plt.title('Hour Wise on Caltech Dataset ')
-    plt.xlabel('Date')
-    plt.ylabel('Energy Delivered (in KWh)')
-    plt.savefig('Hourwise.png', dpi=1200)
-    return df_hour
 
-def charging_demand_per_day(processed_data):
-    df_day = processed_data.resample('D').sum()
-    plt.figure(dpi=1200)
-    plt.plot(df_day.index, df_day['kWhDelivered'],label='original',linewidth=1)
-    plt.gcf().autofmt_xdate()
-    plt.title('Day Wise on Caltech Dataset')
-    plt.xlabel('Date')
-    plt.ylabel('Energy Delivered (in KWh)')
-    plt.savefig('Daywise.png', dpi=1200)
-    return df_day
+# process the raw data downloaded from the NASA website, It changes the date and time format to %y%M%D%H%%M%S 
+def data_preprocess_weather(data_weather):
+   
+    date_time=[]
+    temp=[]
+    frost=[]
+    humidity=[]
+    rain=[]
+    wind=[]
+
+    for i in range(len(data_weather)):
+        date_time.append(pd.Timestamp(data_weather['YEAR'].iloc[i],data_weather['MO'].iloc[i],data_weather['DY'].iloc[i],data_weather['HR'].iloc[i]))
+        temp.append(data_weather['T2M'].iloc[i])
+        frost.append(data_weather['T2MDEW'].iloc[i])
+        humidity.append(data_weather['QV2M'].iloc[i])
+        rain.append(data_weather['PRECTOTCORR'].iloc[i])
+        wind.append(data_weather['WS2M'].iloc[i])
+
+    data = {'date_time':date_time, 'temp':temp,'frost':frost,'humidity':humidity,'rain':rain,'wind':wind}  
+    new_data_weather = pd.DataFrame(data)  
+    # new_data_weather=pd.DataFrame([date_time,temp,frost,humidity,rain,wind])
+    # new_data_weather.columns = ['date_time','temp','frost','humidity','rain','wind']
+
+    return new_data_weather
+
+
+# to find the the date and time in weather data and add the weather information to ACN data    
+def combine_data(data,data_weather):
+ 
+    data1=data_weather.set_index('date_time')
+    weather=[]
+    combined_features=[]
+    for i in range(len(data)):
+        aa=data1.loc[data['chargingHour'].iloc[i]]
+        combined_features.append([data['chargingHour'].iloc[i],data['kWhDelivered'].iloc[i],data['userID'].iloc[i],aa['temp'],aa['frost'],aa['humidity'],aa['rain'],aa['wind']])
+    
+    # data = {'date_time':date_time, 'temp':temp,'frost':frost,'humidity':humidity,'rain':rain,'wind':wind}  
+    new_combined_features = pd.DataFrame(combined_features) 
+    new_combined_features.columns = ['chargingHour','kWhDelivered','userID','temp','frost','humidity','rain','wind']
+
+    return new_combined_features
+
+
 
 
 if __name__=='__main__':
     folder_path_data = '/media/farzeen/sabrent/sabent/Engergy/EV_charging_demand_prediction/data/'
     file_name = 'charging_office_clean.csv'
+    weather_file_name = 'office_weather.csv'
     processed_data_file = 'processed_data.csv'
-    charging_demand_day_file = 'charging_demand_day.csv'
-    charging_demand_hour_file = 'charging_demand_hour.csv'
+    new_data_file='weather_processed_data.csv'
+    
+    # read the raw data
     data = pd.read_csv(folder_path_data+file_name,header=0, parse_dates=[2,3],usecols=[3,9,10,12])
     processed_data = data_preprocess(data)
     processed_data.to_csv(folder_path_data+processed_data_file)
+
+
+    # data = pd.read_csv(folder_path_data+processed_data_file)
+    # read the weather data 
+    data_weather = pd.read_csv(folder_path_data+weather_file_name)
+    processed_data_weather = data_preprocess_weather(data_weather)
+    processed_data_combined = combine_data(processed_data,processed_data_weather)
+    processed_data_combined.to_csv(folder_path_data+new_data_file)
     # charging_demand_day = charging_demand_per_day(processed_data)
     # charging_demand_hour = charging_demand_per_hour(processed_data)
     # charging_demand_day.to_csv(folder_path_data+charging_demand_day_file)

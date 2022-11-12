@@ -79,13 +79,13 @@ def update_charging_datetime(filepath='./data/charging.csv'):
 
 
 if __name__ == "__main__":
-    data_path='/home/shoaib/work/acn/scripts/'
-    file_name='acndata_sessions.json'
+    data_path='/media/farzeen/sabrent/sabent/Engergy/EV_charging_demand_prediction/data/'
+    file_name='acndata_sessions_office.json'
     charging, users=get_data(file_path=data_path+file_name)
-    charging.to_csv('/home/shoaib/work/acn/scripts/charging_caltech.csv')
-    users.to_csv('/home/shoaib/work/acn/scripts/users_caltech.csv')
-    user=update_users_datetime(filepath='/home/shoaib/work/acn/scripts/users_caltech.csv')
-    user.to_csv('/home/shoaib/work/acn/scripts/user_caltech_clean.csv')
-    charging=update_charging_datetime(filepath='/home/shoaib/work/acn/scripts/charging_caltech.csv')
-    charging.to_csv('/home/shoaib/work/acn/scripts/charging_caltech_clean.csv')
+    charging.to_csv('/media/farzeen/sabrent/sabent/Engergy/EV_charging_demand_prediction/data//charging_office.csv')
+    users.to_csv('/media/farzeen/sabrent/sabent/Engergy/EV_charging_demand_prediction/data/users_office.csv')
+    user=update_users_datetime(filepath='/media/farzeen/sabrent/sabent/Engergy/EV_charging_demand_prediction/data/users_office.csv')
+    user.to_csv('/media/farzeen/sabrent/sabent/Engergy/EV_charging_demand_prediction/data/user_office_clean.csv')
+    charging=update_charging_datetime(filepath='/media/farzeen/sabrent/sabent/Engergy/EV_charging_demand_prediction/data/charging_office.csv')
+    charging.to_csv('/media/farzeen/sabrent/sabent/Engergy/EV_charging_demand_prediction/data/charging_office_clean.csv')
     print ('Files users.csv, charging.csv are created.')
